@@ -1,4 +1,4 @@
-package dataprocessing;
+package dataprocessing.amazonwebservices;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -23,7 +23,7 @@ import java.nio.file.StandardCopyOption;
  * Created by charlescostello on 1/30/17.
  * Class to wrap the S3 API
  */
-public class S3Api {
+public class S3Client {
 
     /** *************************************************************
      * @param filename name of file to retrieve from s3
