@@ -1,5 +1,9 @@
 package chatbot;
 
+import nlp.TFIDF;
+
+import java.io.IOException;
+
 /**
  * This code is copyright CloudMinds 2017.
  * This software is released under the GNU Public License <http://www.gnu.org/copyleft/gpl.html>.
@@ -17,6 +21,16 @@ package chatbot;
 public class Chatbot {
 
     public static void main(String[] args) {
+
+        try {
+            String[] TFIDFArgs = new String[2];
+            TFIDFArgs[0] = "-d";
+            TFIDFArgs[1] = "-s";
+            TFIDF.main(TFIDFArgs);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("Test");
     }

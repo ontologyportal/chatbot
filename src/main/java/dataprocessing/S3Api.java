@@ -30,7 +30,7 @@ public class S3Api {
      * @return file name of local file
      * Gets file from S3 and writes to local file
      */
-    static String readS3File(String filename) {
+    public static String readS3File(String filename) {
 
         String newFileName = "testFile.txt";
         String bucketName = "cloudminds-nlp";
