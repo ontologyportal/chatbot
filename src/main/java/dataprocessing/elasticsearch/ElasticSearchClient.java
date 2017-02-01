@@ -1,5 +1,18 @@
 package dataprocessing.elasticsearch;
 
+import org.apache.http.Header;
+import org.apache.http.HttpHost;
+import org.apache.http.message.BasicHeader;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.RestClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ResourceBundle;
+
 /**
  * This code is copyright CloudMinds 2017.
  * This software is released under the GNU Public License <http://www.gnu.org/copyleft/gpl.html>.
@@ -16,4 +29,58 @@ package dataprocessing.elasticsearch;
  */
 public class ElasticSearchClient {
 
+    private RestClient client;
+    private Header header;
+    private String index;
+    private String type;
+
+    public ElasticSearchClient() {
+
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("elasticsearch");
+        index = resourceBundle.getObject("index").toString();
+        type = resourceBundle.getObject("type").toString();
+        header = new BasicHeader("CloudMinds","empty");
+        client = RestClient.builder(new HttpHost(
+                resourceBundle.getObject("host").toString(),
+                Integer.parseInt(resourceBundle.getObject("port").toString()),
+                resourceBundle.getObject("protocol").toString())).build();
+    }
+
+    public void close() {
+
+        try {
+            client.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void indexDocument() {
+
+    }
+
+    public JSONArray retrieveDocument() {
+
+        JSONArray documents = new JSONArray();
+
+        try {
+            // Get raw response
+            Response response = client.performRequest("GET", String.format("/%s/%s/_search", index, "audio"), header);
+
+            // Convert raw response into JSON
+            String str;
+            StringBuilder responseStrBuilder = new StringBuilder();
+            BufferedReader streamReader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            while ((str = streamReader.readLine()) != null) responseStrBuilder.append(str);
+
+            // Extract documents
+            documents = (JSONArray) ((JSONObject) new JSONObject(responseStrBuilder.toString()).get("hits")).get("hits");
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return documents;
+    }
 }
