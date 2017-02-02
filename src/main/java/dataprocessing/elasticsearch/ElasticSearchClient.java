@@ -36,18 +36,25 @@ public class ElasticSearchClient {
     private String index;
     private String type;
 
+    /** ***************************************************************
+     * Constructor
+     */
     public ElasticSearchClient() {
 
         ResourceBundle resourceBundle = ResourceBundle.getBundle("elasticsearch");
         index = resourceBundle.getObject("index").toString();
         type = resourceBundle.getObject("type").toString();
         header = new BasicHeader("CloudMinds","empty");
+
         client = RestClient.builder(new HttpHost(
                 resourceBundle.getObject("host").toString(),
                 Integer.parseInt(resourceBundle.getObject("port").toString()),
                 resourceBundle.getObject("protocol").toString())).build();
     }
 
+    /** ***************************************************************
+     * Closes client connection
+     */
     public void close() {
 
         try {
@@ -58,14 +65,22 @@ public class ElasticSearchClient {
         }
     }
 
-    public void indexDocument() {
+    /** ***************************************************************
+     * @param corpus Corpus line is from
+     * @param line Line number in corpus
+     * @param text line text
+     * Indexes line from corpus
+     */
+    public void indexDocument(String corpus, int line, String text) {
 
         try {
+            // Create JSON entity
             JSONObject entity = new JSONObject();
-            entity.put("corpora", "Test corpora");
-            entity.put("line", "99");
-            entity.put("text", "Test text and then some...");
+            entity.put("corpus", corpus);
+            entity.put("line", line);
+            entity.put("text", text);
 
+            // Post JSON entity
             client.performRequest("PUT",
                     String.format("/%s/%s/1", index, type),
                     Collections.emptyMap(),
@@ -77,13 +92,17 @@ public class ElasticSearchClient {
         }
     }
 
-    public JSONObject retrieveDocument() {
+    /** ***************************************************************
+     * @param id Id of document to retrieve
+     * @return document in JSON
+     */
+    public JSONObject retrieveDocument(String id) {
 
         JSONObject documents = new JSONObject();
 
         try {
             // Get raw response
-            Response response = client.performRequest("GET", String.format("/%s/%s/1", index, type), header);
+            Response response = client.performRequest("GET", String.format("/%s/%s/%s", index, type, id), header);
 
             // Convert raw response into JSON
             String str;
@@ -92,12 +111,30 @@ public class ElasticSearchClient {
             while ((str = streamReader.readLine()) != null) responseStrBuilder.append(str);
 
             // Extract documents
-            documents = (JSONObject) new JSONObject(responseStrBuilder.toString()).get("_source");
+            if (id == null || id.equals(""))
+                documents = (JSONObject) ((JSONObject) new JSONObject(responseStrBuilder.toString()).get("hits")).get("hits");
+            else
+                documents = (JSONObject) new JSONObject(responseStrBuilder.toString()).get("_source");
+
         }
         catch (IOException e) {
             e.printStackTrace();
         }
 
         return documents;
+    }
+
+    /** ***************************************************************
+     * @param id Id of document to delete
+     * Deletes document from index
+     */
+    public void deleteDocument(String id) {
+
+        try {
+            client.performRequest("Delete", String.format("/%s/%s/%s", index, type, id), header);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
