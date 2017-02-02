@@ -2,15 +2,17 @@ package dataprocessing.elasticsearch;
 
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.ResourceBundle;
 
 /**
@@ -58,15 +60,30 @@ public class ElasticSearchClient {
 
     public void indexDocument() {
 
+        try {
+            JSONObject entity = new JSONObject();
+            entity.put("corpora", "Test corpora");
+            entity.put("line", "99");
+            entity.put("text", "Test text and then some...");
+
+            client.performRequest("PUT",
+                    String.format("/%s/%s/1", index, type),
+                    Collections.emptyMap(),
+                    new NStringEntity(entity.toString(), ContentType.APPLICATION_JSON),
+                    header);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public JSONArray retrieveDocument() {
+    public JSONObject retrieveDocument() {
 
-        JSONArray documents = new JSONArray();
+        JSONObject documents = new JSONObject();
 
         try {
             // Get raw response
-            Response response = client.performRequest("GET", String.format("/%s/%s/_search", index, "audio"), header);
+            Response response = client.performRequest("GET", String.format("/%s/%s/1", index, type), header);
 
             // Convert raw response into JSON
             String str;
@@ -75,7 +92,7 @@ public class ElasticSearchClient {
             while ((str = streamReader.readLine()) != null) responseStrBuilder.append(str);
 
             // Extract documents
-            documents = (JSONArray) ((JSONObject) new JSONObject(responseStrBuilder.toString()).get("hits")).get("hits");
+            documents = (JSONObject) new JSONObject(responseStrBuilder.toString()).get("_source");
         }
         catch (IOException e) {
             e.printStackTrace();
