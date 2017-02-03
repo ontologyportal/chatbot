@@ -37,10 +37,13 @@ public class CorporaIndexer {
 //                                .indexDocument(corpus, file, file.indexOf(line), line)));
 //
         for (String file : s3Client.getDirectoryFiles(corpus)) {
-            List<String> lines = s3Client.readS3File(file);
-//            for (int i = 0; i < lines.size(); i++) {
-//                 elasticSearchClient.indexDocument(corpus, file, i, lines.get(i));
-//            }
+            if (file.substring(file.length() - 3, file.length()).equals("txt")) {
+                List<String> lines = s3Client.readS3File(file);
+                int test = 123;
+//                for (int i = 0; i < lines.size(); i++) {
+//                    elasticSearchClient.indexDocument(corpus, file, i, lines.get(i));
+//                }
+            }
         }
     }
 
@@ -51,8 +54,9 @@ public class CorporaIndexer {
 
         elasticSearchClient = new ElasticSearchClient();
         s3Client = new S3Client();
-        corpora = Arrays.asList("Corpora/CornellMovieDialogs", "Corpora/NPSChatCorpus", "Corpora/NUSSMSCorpus", "Corpora/SwitchboardDialogs");
+        corpora = Arrays.asList("Corpora/CornellMovieDialogs"); //, "Corpora/NPSChatCorpus", "Corpora/NUSSMSCorpus", "Corpora/SwitchboardDialogs");
         corpora.forEach(this::indexCorpus);
+        elasticSearchClient.close();
     }
 
     /** ***************************************************************

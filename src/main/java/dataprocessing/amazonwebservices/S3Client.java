@@ -2,13 +2,16 @@ package dataprocessing.amazonwebservices;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * This code is copyright CloudMinds 2017.
@@ -49,7 +52,7 @@ public class S3Client {
         List<String> files = new ArrayList<>();
 
         try {
-            ObjectListing s3Files = client.listObjects(bucket, directory);
+            files = client.listObjects(bucket, directory).getObjectSummaries().stream().map(S3ObjectSummary::getKey).collect(Collectors.toCollection(ArrayList::new));
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -70,7 +73,15 @@ public class S3Client {
 
         try {
             S3Object object = client.getObject(bucket, filename);
-            S3ObjectInputStream contentStream = object.getObjectContent();
+            S3ObjectInputStream stream = object.getObjectContent();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
+
+            String line;
+            while((line = bufferedReader.readLine()) != null)
+                lines.add(line);
+
+            bufferedReader.close();
+            stream.close();
         }
         catch (Exception e) {
             e.printStackTrace();
