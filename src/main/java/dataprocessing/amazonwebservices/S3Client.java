@@ -2,12 +2,13 @@ package dataprocessing.amazonwebservices;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * This code is copyright CloudMinds 2017.
@@ -25,24 +26,56 @@ import java.nio.file.StandardCopyOption;
  */
 public class S3Client {
 
+    private AmazonS3 client;
+    private String bucket;
+
+    /** *************************************************************
+     * Constructor
+     */
+    public S3Client() {
+
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("aws");
+        bucket = resourceBundle.getObject("bucket").toString();
+        client = new AmazonS3Client();
+    }
+
+    /** *************************************************************
+     * @param directory Directory of files to be returns
+     * @return List of files in directory
+     * Retrieves list of files in given directory
+     */
+    public List<String> getDirectoryFiles(String directory) {
+
+        List<String> files = new ArrayList<>();
+
+        try {
+            ObjectListing s3Files = client.listObjects(bucket, directory);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return files;
+    }
+
+
     /** *************************************************************
      * @param filename name of file to retrieve from s3
      * @return file name of local file
      * Gets file from S3 and writes to local file
      */
-    public static String readS3File(String filename) {
+    public List<String> readS3File(String filename) {
 
-        String newFileName = "testFile.txt";
-        String bucketName = "cloudminds-nlp";
-        AmazonS3 client = new AmazonS3Client();
+        List<String> lines = new ArrayList<>();
+
         try {
-            S3Object object = client.getObject(bucketName, filename);
+            S3Object object = client.getObject(bucket, filename);
             S3ObjectInputStream contentStream = object.getObjectContent();
-            Files.copy(contentStream, new File(newFileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        return newFileName;
+
+        return lines;
     }
 }

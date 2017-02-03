@@ -71,12 +71,13 @@ public class ElasticSearchClient {
      * @param text line text
      * Indexes line from corpus
      */
-    public void indexDocument(String corpus, int line, String text) {
+    public void indexDocument(String corpus, String file, int line, String text) {
 
         try {
             // Create JSON entity
             JSONObject entity = new JSONObject();
             entity.put("corpus", corpus);
+            entity.put("file", file);
             entity.put("line", line);
             entity.put("text", text);
 
