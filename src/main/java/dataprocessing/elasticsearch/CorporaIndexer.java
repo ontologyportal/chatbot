@@ -31,18 +31,12 @@ public class CorporaIndexer {
      */
     private void indexCorpus(String corpus) {
 
-//        s3Client.getDirectoryFiles(corpus)
-//                .forEach(file -> s3Client.readS3File(file)
-//                        .forEach(line -> elasticSearchClient
-//                                .indexDocument(corpus, file, file.indexOf(line), line)));
-//
         for (String file : s3Client.getDirectoryFiles(corpus)) {
             if (file.substring(file.length() - 3, file.length()).equals("txt")) {
                 List<String> lines = s3Client.readS3File(file);
-                int test = 123;
-//                for (int i = 0; i < lines.size(); i++) {
-//                    elasticSearchClient.indexDocument(corpus, file, i, lines.get(i));
-//                }
+                for (int i = 0; i < 5; i++) {
+                    elasticSearchClient.indexDocument(corpus.split("/")[1], file.split("/")[file.split("/").length - 1], i, lines.get(i));
+                }
             }
         }
     }

@@ -70,23 +70,50 @@ public class ElasticSearchClient {
      * @param line Line number in corpus
      * @param text line text
      * Indexes line from corpus
+     *
+     * Mapping for chatbot/dialog:
+         PUT chatbot
+         {
+             "mappings": {
+                 "dialog": {
+                     "properties": {
+                         "corpus": {
+                             "type": "string",
+                                     "index": "not_analyzed"
+                         },
+                         "file": {
+                             "type": "string",
+                                     "index": "not_analyzed"
+                         },
+                         "line": {
+                             "type": "long",
+                                     "index": "not_analyzed"
+                         },
+                         "text": {
+                             "type": "string",
+                                     "index": "analyzed",
+                                     "analyzer": "english"
+                         }
+                     }
+                 }
+             }
+         }
      */
-    public void indexDocument(String corpus, String file, int line, String text) {
+     public void indexDocument(String corpus, String file, int line, String text) {
 
-        try {
-            // Create JSON entity
-            JSONObject entity = new JSONObject();
-            entity.put("corpus", corpus);
-            entity.put("file", file);
-            entity.put("line", line);
-            entity.put("text", text);
+         try {
+             JSONObject entity = new JSONObject();
+             entity.put("corpus", corpus);
+             entity.put("file", file);
+             entity.put("line", line);
+             entity.put("text", text);
 
             // Post JSON entity
-            client.performRequest("PUT",
-                    String.format("/%s/%s/1", index, type),
-                    Collections.emptyMap(),
-                    new NStringEntity(entity.toString(), ContentType.APPLICATION_JSON),
-                    header);
+             client.performRequest("POST",
+                     String.format("/%s/%s/%s", index, type, corpus + "_" + file + "_" + line),
+                     Collections.emptyMap(),
+                     new NStringEntity(entity.toString(), ContentType.APPLICATION_JSON),
+                     header);
         }
         catch (IOException e) {
             e.printStackTrace();
